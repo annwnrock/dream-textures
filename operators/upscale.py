@@ -85,11 +85,13 @@ class Upscale(bpy.types.Operator):
             input_image_path = save_temp_image(input_image)
         else:
             for area in context.screen.areas:
-                if area.type == 'IMAGE_EDITOR':
-                    if area.spaces.active.image is not None:
-                        input_image = area.spaces.active.image
-                        input_image_path = save_temp_image(input_image)
-        
+                if (
+                    area.type == 'IMAGE_EDITOR'
+                    and area.spaces.active.image is not None
+                ):
+                    input_image = area.spaces.active.image
+                    input_image_path = save_temp_image(input_image)
+
         if input_image is None:
             self.report({"ERROR"}, "No open image in the Image Editor space, or selected Image Texture node.")
             return {"FINISHED"}
@@ -103,7 +105,13 @@ class Upscale(bpy.types.Operator):
         def image_callback(shared_memory_name, seed, width, height):
             scene.dream_textures_info = ""
             shared_memory = SharedMemory(shared_memory_name)
-            image = bpy_image(seed + ' (Upscaled)', width, height, np.frombuffer(shared_memory.buf,dtype=np.float32))
+            image = bpy_image(
+                f'{seed} (Upscaled)',
+                width,
+                height,
+                np.frombuffer(shared_memory.buf, dtype=np.float32),
+            )
+
             for area in context.screen.areas:
                 if area.type == 'IMAGE_EDITOR':
                     area.spaces.active.image = image
@@ -113,6 +121,7 @@ class Upscale(bpy.types.Operator):
 
         def info_callback(msg=""):
             scene.dream_textures_info = msg
+
         def exception_callback(fatal, msg, trace):
             scene.dream_textures_info = ""
             self.report({'ERROR'}, msg)

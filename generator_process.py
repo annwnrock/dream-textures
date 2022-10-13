@@ -53,14 +53,14 @@ class GeneratorProcess():
         self.thread.start()
     
     @classmethod
-    def shared(self, create=True):
+    def shared(cls, create=True):
         global _shared_instance
         if _shared_instance is None and create:
             _shared_instance = GeneratorProcess()
         return _shared_instance
     
     @classmethod
-    def kill_shared(self):
+    def kill_shared(cls):
         global _shared_instance
         if _shared_instance is None:
             return
@@ -90,7 +90,7 @@ class GeneratorProcess():
             Action.EXCEPTION: exception_callback
         }
 
-        for i in range(0,args['iterations']):
+        for _ in range(args['iterations']):
             while True:
                 while len(queue) == 0:
                     yield # nothing in queue, let blender resume
@@ -258,8 +258,8 @@ def main():
     model   = 'stable-diffusion-1.4'
 
     models  = OmegaConf.load(models_config)
-    config  = absolute_path('stable_diffusion/' + models[model].config)
-    weights = absolute_path('stable_diffusion/' + models[model].weights)
+    config = absolute_path(f'stable_diffusion/{models[model].config}')
+    weights = absolute_path(f'stable_diffusion/{models[model].weights}')
 
     byte_to_normalized = 1.0 / 255.0
     def image_to_bytes(image):
@@ -280,7 +280,7 @@ def main():
         # Only use the non-upscaled texture, as upscaling is a separate step in this addon.
         if not upscaled:
             send_action(Action.IMAGE, shared_memory_name=share_image_memory(image), seed=seed, width=image.width, height=image.height)
-    
+
     step = 0
     def view_step(samples, i):
         nonlocal step
@@ -340,7 +340,7 @@ def main():
         transformers.CLIPTextModel.from_pretrained(clip_version)
 
         tqdm.update = old_update
-    
+
     from transformers.utils.hub import TRANSFORMERS_CACHE
     model_paths = {'bert-base-uncased', 'openai--clip-vit-large-patch14'}
     if any(not os.path.isdir(os.path.join(TRANSFORMERS_CACHE, f'models--{path}')) for path in model_paths):
@@ -354,7 +354,7 @@ def main():
             if json_len == 0:
                 return # stdin closed
             args = json.loads(stdin.read(json_len))
-            
+
             # Reset the step count
             step = 0
 
@@ -375,7 +375,7 @@ def main():
                     send_exception()
                     return
             send_info("Starting")
-            
+
             try:
                 tmp_stderr = sys.stderr = StringIO() # prompt2image writes exceptions straight to stderr, intercepting
                 generator.prompt2image(

@@ -10,6 +10,9 @@ import types
 
 def dream_texture_panels():
     for space_type in SPACE_TYPES:
+
+
+
         class DreamTexturePanel(Panel):
             """Creates a Panel in the scene context of the properties editor"""
             bl_label = "Dream Texture"
@@ -21,10 +24,10 @@ def dream_texture_panels():
             @classmethod
             def poll(self, context):
                 if self.bl_space_type == 'NODE_EDITOR':
-                    return context.area.ui_type == "ShaderNodeTree" or context.area.ui_type == "CompositorNodeTree"
+                    return context.area.ui_type in ["ShaderNodeTree", "CompositorNodeTree"]
                 else:
                     return True
-            
+
             def draw_header_preset(self, context):
                 layout = self.layout
                 layout.operator(ImportPromptFile.bl_idname, text="", icon="IMPORT")
@@ -39,11 +42,13 @@ def dream_texture_panels():
                 elif new_version_available():
                     layout.operator(OpenLatestVersion.bl_idname, icon="IMPORT")
 
+
         DreamTexturePanel.__name__ = f"DREAM_PT_dream_panel_{space_type}"
         yield DreamTexturePanel
 
         def get_prompt(context):
             return context.scene.dream_textures_prompt
+
         yield from create_panel(space_type, 'UI', DreamTexturePanel.bl_idname, prompt_panel, get_prompt)
         yield create_panel(space_type, 'UI', DreamTexturePanel.bl_idname, size_panel, get_prompt)
         yield from create_panel(space_type, 'UI', DreamTexturePanel.bl_idname, inpaint_init_image_panels, get_prompt)
@@ -68,6 +73,9 @@ def create_panel(space_type, region_type, parent_id, ctor, get_prompt, use_prope
     return ctor(SubPanel, space_type, get_prompt)
 
 def prompt_panel(sub_panel, space_type, get_prompt):
+
+
+
     class PromptPanel(sub_panel):
         """Create a subpanel for prompt input"""
         bl_label = "Prompt"
@@ -85,14 +93,16 @@ def prompt_panel(sub_panel, space_type, get_prompt):
             structure = next(x for x in prompt_structures if x.id == get_prompt(context).prompt_structure)
             for segment in structure.structure:
                 segment_row = layout.row()
-                enum_prop = 'prompt_structure_token_' + segment.id + '_enum'
+                enum_prop = f'prompt_structure_token_{segment.id}_enum'
                 is_custom = getattr(get_prompt(context), enum_prop) == 'custom'
                 if is_custom:
-                    segment_row.prop(get_prompt(context), 'prompt_structure_token_' + segment.id)
+                    segment_row.prop(get_prompt(context), f'prompt_structure_token_{segment.id}')
                 enum_cases = DreamPrompt.__annotations__[enum_prop].keywords['items']
                 if len(enum_cases) != 1 or enum_cases[0][0] != 'custom':
                     segment_row.prop(get_prompt(context), enum_prop, icon_only=is_custom)
             layout.prop(get_prompt(context), "seamless")
+
+
     yield PromptPanel
 
     class NegativePromptPanel(sub_panel):
@@ -131,6 +141,9 @@ def size_panel(sub_panel, space_type, get_prompt):
     return SizePanel
 
 def inpaint_init_image_panels(sub_panel, space_type, get_prompt):
+
+
+
     class InpaintPanel(sub_panel):
         """Create a subpanel for inpainting options"""
         bl_idname = f"DREAM_PT_dream_panel_inpaint_{space_type}"
@@ -138,12 +151,14 @@ def inpaint_init_image_panels(sub_panel, space_type, get_prompt):
         bl_options = {'DEFAULT_CLOSED'}
 
         @classmethod
-        def poll(self, context):
+        def poll(cls, context):
             if not get_prompt(context).use_init_img:
                 for area in context.screen.areas:
-                    if area.type == 'IMAGE_EDITOR':
-                        if area.spaces.active.image is not None:
-                            return True
+                    if (
+                        area.type == 'IMAGE_EDITOR'
+                        and area.spaces.active.image is not None
+                    ):
+                        return True
             return False
 
         def draw_header(self, context):
@@ -159,7 +174,11 @@ def inpaint_init_image_panels(sub_panel, space_type, get_prompt):
             layout.label(text="2. Select the 'Paint' editing context")
             layout.label(text="3. Choose the 'Mark Inpaint Area' brush")
             layout.label(text="4. Draw over the area to inpaint")
+
+
     yield InpaintPanel
+
+
 
     class InitImagePanel(sub_panel):
         """Create a subpanel for init image options"""
@@ -168,10 +187,8 @@ def inpaint_init_image_panels(sub_panel, space_type, get_prompt):
         bl_options = {'DEFAULT_CLOSED'}
 
         @classmethod
-        def poll(self, context):
-            if get_prompt(context).use_inpainting and InpaintPanel.poll(context):
-                return False
-            return True
+        def poll(cls, context):
+            return not get_prompt(context).use_inpainting or not InpaintPanel.poll(context)
 
         def draw_header(self, context):
             self.layout.prop(get_prompt(context), "use_init_img", text="")
@@ -180,11 +197,13 @@ def inpaint_init_image_panels(sub_panel, space_type, get_prompt):
             super().draw(context)
             layout = self.layout
             layout.use_property_split = True
-            
+
             layout.enabled = get_prompt(context).use_init_img
             layout.template_ID(context.scene, "init_img", open="image.open")
             layout.prop(get_prompt(context), "strength")
             layout.prop(get_prompt(context), "fit")
+
+
     yield InitImagePanel
 
 def advanced_panel(sub_panel, space_type, get_prompt):
@@ -221,7 +240,7 @@ def actions_panel(sub_panel, space_type, get_prompt):
             super().draw(context)
             layout = self.layout
             layout.use_property_split = True
-            
+
             row = layout.row()
             row.scale_y = 1.5
             if context.scene.dream_textures_progress <= 0:

@@ -27,7 +27,7 @@ class InpaintAreaStroke(bpy.types.Operator):
             time = 0
         elif self.firing_mode == 1 and is_painting: # MOVE
             original_tool = context.workspace.tools.from_space_image_mode('PAINT').idname
-        
+
             bpy.ops.paint.brush_select(image_tool='DRAW', toggle=False)
             brush = bpy.data.brushes["TexDraw"]
             brush.use_pressure_strength = False
@@ -35,24 +35,29 @@ class InpaintAreaStroke(bpy.types.Operator):
             context.tool_settings.image_paint.brush = brush
             stroke = {
                 "name": "stroke",
-                "mouse": (event.mouse_x, event.mouse_y - context.scene.tool_settings.unified_paint_settings.size),
-                "mouse_event": (0,0),
-                "pen_flip" : True,
-                "is_start": True if last_stroke is None else False,
+                "mouse": (
+                    event.mouse_x,
+                    event.mouse_y
+                    - context.scene.tool_settings.unified_paint_settings.size,
+                ),
+                "mouse_event": (0, 0),
+                "pen_flip": True,
+                "is_start": last_stroke is None,
                 "location": (0, 0, 0),
                 "size": context.scene.tool_settings.unified_paint_settings.size,
                 "pressure": 1,
                 "x_tilt": 0,
                 "y_tilt": 0,
-                "time": float(time)
+                "time": float(time),
             }
+
             if last_stroke is not None:
                 with context.temp_override():
                     bpy.ops.paint.image_paint(stroke=[last_stroke, stroke], mode='NORMAL')
             last_stroke = stroke
             time += 1
             bpy.ops.wm.tool_set_by_id(name=original_tool)
-        
+
         return {"FINISHED"}
 
     def execute(self, context):

@@ -11,7 +11,7 @@ class RenderPropertiesPanel(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         return context.scene.render.engine == 'CYCLES'
 
     def draw_header(self, context):

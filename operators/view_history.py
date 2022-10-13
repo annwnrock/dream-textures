@@ -29,7 +29,7 @@ class RecallHistoryEntry(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         return context.scene.dream_textures_history_selection is not None and context.scene.dream_textures_history_selection > 0
     
     def execute(self, context):
@@ -58,7 +58,7 @@ class RemoveHistorySelection(bpy.types.Operator):
     bl_options = {'REGISTER'}
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         return context.scene.dream_textures_history_selection is not None and context.scene.dream_textures_history_selection > 0
     
     def execute(self, context):
@@ -80,7 +80,7 @@ class ExportHistorySelection(bpy.types.Operator, ExportHelper):
     )
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         return context.scene.dream_textures_history_selection is not None and context.scene.dream_textures_history_selection > 0
     
     def invoke(self, context, event):
