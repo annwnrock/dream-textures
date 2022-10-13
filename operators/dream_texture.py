@@ -147,7 +147,7 @@ class HeadlessDreamTexture(bpy.types.Operator):
 
         def info(msg=""):
             scene.dream_textures_info = msg
-        
+
         def handle_exception(fatal, msg, trace):
             info() # clear variable
             if fatal:
@@ -174,7 +174,7 @@ class HeadlessDreamTexture(bpy.types.Operator):
             update=step_progress_update
         )
         bpy.types.Scene.dream_textures_info = bpy.props.StringProperty(name="Info", update=step_progress_update)
-        
+
         info("Waiting For Process")
         generator = GeneratorProcess.shared()
 
@@ -200,9 +200,11 @@ class HeadlessDreamTexture(bpy.types.Operator):
 
         if headless_prompt.use_inpainting:
             for area in screen.areas:
-                if area.type == 'IMAGE_EDITOR':
-                    if area.spaces.active.image is not None:
-                        init_img = area.spaces.active.image
+                if (
+                    area.type == 'IMAGE_EDITOR'
+                    and area.spaces.active.image is not None
+                ):
+                    init_img = area.spaces.active.image
         init_img_path = None
         if init_img is not None:
             init_img_path = save_temp_image(init_img)

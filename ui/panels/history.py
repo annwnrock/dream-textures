@@ -10,6 +10,9 @@ from ..space_types import SPACE_TYPES
 
 def history_panels():
     for space_type in SPACE_TYPES:
+
+
+
         class HistoryPanel(Panel):
             """Panel for Dream Textures History"""
             bl_label = "History"
@@ -19,21 +22,18 @@ def history_panels():
             bl_region_type = 'UI'
 
             @classmethod
-            def poll(self, context):
-                if self.bl_space_type == 'NODE_EDITOR':
-                    return context.area.ui_type == "ShaderNodeTree" or context.area.ui_type == "CompositorNodeTree"
+            def poll(cls, context):
+                if cls.bl_space_type == 'NODE_EDITOR':
+                    return context.area.ui_type in ["ShaderNodeTree", "CompositorNodeTree"]
                 else:
                     return True
 
             def draw(self, context):
                 history = context.preferences.addons[StableDiffusionPreferences.bl_idname].preferences.history
-                if len(history) < 1:
-                    header = history.add()
-                else:
-                    header = history[0]
+                header = history.add() if len(history) < 1 else history[0]
                 header.prompt_structure_token_subject = "SCENE_UL_HistoryList_header"
                 self.layout.template_list("SCENE_UL_HistoryList", "", context.preferences.addons[StableDiffusionPreferences.bl_idname].preferences, "history", context.scene, "dream_textures_history_selection")
-                
+
                 row = self.layout.row()
                 row.prop(context.scene, "dream_textures_history_selection_preview")
                 row.operator(RemoveHistorySelection.bl_idname, text="", icon="X")
@@ -41,5 +41,7 @@ def history_panels():
 
                 self.layout.operator(RecallHistoryEntry.bl_idname)
                 self.layout.operator(ClearHistory.bl_idname)
+
+
         HistoryPanel.__name__ = f"DREAM_PT_dream_history_panel_{space_type}"
         yield HistoryPanel

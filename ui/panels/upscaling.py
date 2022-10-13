@@ -43,6 +43,9 @@ class OpenRealESRGANWeightsDirectory(bpy.types.Operator, ImportHelper):
 
 def upscaling_panels():
     for space_type in SPACE_TYPES:
+
+
+
         class UpscalingPanel(Panel):
             """Panel for AI Upscaling"""
             bl_label = "AI Upscaling"
@@ -53,9 +56,9 @@ def upscaling_panels():
             bl_options = {'DEFAULT_CLOSED'}
 
             @classmethod
-            def poll(self, context):
-                if self.bl_space_type == 'NODE_EDITOR':
-                    return context.area.ui_type == "ShaderNodeTree" or context.area.ui_type == "CompositorNodeTree"
+            def poll(cls, context):
+                if cls.bl_space_type == 'NODE_EDITOR':
+                    return context.area.ui_type in ["ShaderNodeTree", "CompositorNodeTree"]
                 else:
                     return True
 
@@ -80,6 +83,7 @@ def upscaling_panels():
                     layout.label(text=context.scene.dream_textures_info, icon="INFO")
                 else:
                     layout.operator(Upscale.bl_idname, icon="FULLSCREEN_ENTER")
-        
+
+
         UpscalingPanel.__name__ = f"DREAM_PT_dream_troubleshooting_panel_{space_type}"
         yield UpscalingPanel

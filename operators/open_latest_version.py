@@ -18,7 +18,7 @@ def check_for_updates():
         pass
 
 def new_version_available():
-    return not latest_version == VERSION
+    return latest_version != VERSION
 
 force_show_download = False
 def do_force_show_download():
@@ -34,7 +34,7 @@ class OpenLatestVersion(bpy.types.Operator):
     bl_options = {"REGISTER", "INTERNAL"}
 
     @classmethod
-    def poll(self, context):
+    def poll(cls, context):
         return True
 
     def execute(self, context):
